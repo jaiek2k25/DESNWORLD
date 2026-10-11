@@ -232,7 +232,7 @@ async function saveApi() {
 
 .mode-card {
   text-align: left;
-  background: rgba(8, 12, 22, 0.4);
+  background: var(--input-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 11px 13px;
@@ -248,7 +248,7 @@ async function saveApi() {
 
 .mode-card.active {
   border-color: var(--gold);
-  background: rgba(232, 163, 61, 0.1);
+  background: color-mix(in srgb, var(--gold) 10%, transparent);
   color: var(--text);
 }
 

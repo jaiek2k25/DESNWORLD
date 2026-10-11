@@ -1,5 +1,6 @@
 <script setup>
 import { store, setMode, dismissError } from './store.js'
+import ThemeSwitcher from './components/ThemeSwitcher.vue'
 import QuestionComposer from './components/QuestionComposer.vue'
 import ProviderSettings from './components/ProviderSettings.vue'
 import HistoryPanel from './components/HistoryPanel.vue'
@@ -23,29 +24,30 @@ const TABS = [
   <header class="site-header">
     <div class="brand">
       <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
-        <rect width="64" height="64" rx="15" fill="rgba(232,163,61,0.12)" />
+        <rect class="mark-bg" width="64" height="64" rx="18" />
         <path
+          class="mark-lines"
           d="M32 46V26M32 26L20 16M32 26L44 16M32 34L18 28M32 34L46 28"
-          stroke="#e8a33d"
           stroke-width="3"
           stroke-linecap="round"
           fill="none"
         />
-        <circle cx="32" cy="46" r="4.5" fill="#e8a33d" />
-        <circle cx="20" cy="16" r="4" fill="#5ec8d8" />
-        <circle cx="44" cy="16" r="4" fill="#5ec8d8" />
-        <circle cx="18" cy="28" r="3.5" fill="#b48be0" />
-        <circle cx="46" cy="28" r="3.5" fill="#b48be0" />
+        <circle class="mark-root" cx="32" cy="46" r="4.5" />
+        <circle class="mark-b2" cx="20" cy="16" r="4" />
+        <circle class="mark-b2" cx="44" cy="16" r="4" />
+        <circle class="mark-b4" cx="18" cy="28" r="3.5" />
+        <circle class="mark-b4" cx="46" cy="28" r="3.5" />
       </svg>
       <div class="brand-text">
-        <div class="brand-name display">DESNWORLD</div>
-        <div class="brand-tag">Run the full scenario engine in your browser — possibilities, not predictions</div>
+        <h1 class="brand-name display">DESNWORLD</h1>
+        <div class="brand-tag">The scenario atelier — possibilities, not predictions</div>
       </div>
     </div>
     <div class="header-right">
       <span v-if="store.run.kind === 'demo'" class="badge stance-plausible"><span class="dot"></span>Demo engine</span>
       <span v-else-if="store.run.kind === 'browser'" class="badge stance-more"><span class="dot"></span>Your AI model</span>
       <span v-else class="badge stance-more"><span class="dot"></span>API mode</span>
+      <ThemeSwitcher />
     </div>
   </header>
 
@@ -120,13 +122,34 @@ const TABS = [
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 18px 28px 14px;
+  padding: 16px 30px;
   border-bottom: 1px solid var(--border);
-  background: rgba(8, 12, 22, 0.5);
-  backdrop-filter: blur(10px);
+  background: color-mix(in srgb, var(--surface) 75%, transparent);
+  backdrop-filter: blur(14px);
   position: sticky;
   top: 0;
   z-index: 30;
+  transition: var(--transition-theme);
+}
+
+.mark-bg {
+  fill: color-mix(in srgb, var(--gold) 12%, transparent);
+}
+
+.mark-lines {
+  stroke: var(--gold);
+}
+
+.mark-root {
+  fill: var(--gold);
+}
+
+.mark-b2 {
+  fill: var(--cyan);
+}
+
+.mark-b4 {
+  fill: var(--violet);
 }
 
 .brand {
@@ -142,15 +165,23 @@ const TABS = [
 }
 
 .brand-name {
-  font-size: 23px;
-  letter-spacing: 0.14em;
+  margin: 0;
+  font-size: 27px;
+  font-weight: 550;
+  letter-spacing: 0.18em;
   color: var(--text);
-  line-height: 1.15;
+  line-height: 1.12;
+  background: linear-gradient(120deg, var(--text) 55%, var(--gold) 115%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .brand-tag {
-  font-size: 11.5px;
-  letter-spacing: 0.06em;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 12.5px;
+  letter-spacing: 0.05em;
   color: var(--text-muted);
 }
 
@@ -211,8 +242,9 @@ const TABS = [
 
 .site-footer {
   border-top: 1px solid var(--border);
-  padding: 20px 28px 26px;
-  background: rgba(8, 12, 22, 0.45);
+  padding: 22px 30px 28px;
+  background: color-mix(in srgb, var(--bg-1) 70%, transparent);
+  transition: var(--transition-theme);
 }
 
 .footer-inner {

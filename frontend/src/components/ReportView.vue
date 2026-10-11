@@ -263,7 +263,7 @@ function evidenceById(id) {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 13px;
-  background: rgba(8, 12, 22, 0.3);
+  background: var(--overlay-soft);
 }
 
 .mini-label {

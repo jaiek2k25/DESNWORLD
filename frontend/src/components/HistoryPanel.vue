@@ -71,7 +71,7 @@ function formatDate(iso) {
 .history-item {
   flex: 1;
   text-align: left;
-  background: rgba(8, 12, 22, 0.35);
+  background: var(--input-bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 9px 11px;
