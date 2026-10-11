@@ -1,40 +1,15 @@
 /**
  * Client-side helpers for DESNWORLD scenario reports.
  *
- * `validateImportedReport` performs a lightweight structural check (the engine
- * performs full schema validation before producing reports). It exists so a
- * user dragging in a random JSON file gets a clear explanation instead of a
- * broken tree view.
+ * `validateImportedReport` runs the full schema-v1 validation (shared with the
+ * in-browser engine) so a user dragging in a random JSON file gets a clear
+ * explanation instead of a broken tree view.
  */
 
-const SCHEMA_MAJOR = 1
-
-export function parseSchemaVersion(version) {
-  if (typeof version !== 'string') return null
-  const match = /^(\d+)\.(\d+)\.(\d+)$/.exec(version.trim())
-  if (!match) return null
-  return [Number(match[1]), Number(match[2]), Number(match[3])]
-}
+import { validateReport } from '../engine/schema.js'
 
 export function validateImportedReport(doc) {
-  const problems = []
-  if (!doc || typeof doc !== 'object' || Array.isArray(doc)) {
-    return { valid: false, problems: ['The file must contain a JSON object.'] }
-  }
-  const version = parseSchemaVersion(doc.schema_version)
-  if (!version || version[0] !== SCHEMA_MAJOR) {
-    problems.push(
-      `Unsupported schema_version "${doc.schema_version}" — this interface reads MAJOR version ${SCHEMA_MAJOR}.`
-    )
-  }
-  if (!doc.request?.question) problems.push('Missing request.question.')
-  if (!doc.baseline || typeof doc.baseline !== 'object') problems.push('Missing baseline scenario.')
-  const alternatives = doc.alternatives
-  if (!Array.isArray(alternatives) || alternatives.length !== 3) {
-    problems.push('The report must contain exactly 3 alternative scenarios.')
-  }
-  if (!doc.comparison) problems.push('Missing comparison report.')
-  if (doc.baseline && !doc.baseline.stance) problems.push('Baseline is missing its stance.')
+  const problems = validateReport(doc)
   return { valid: problems.length === 0, problems }
 }
 

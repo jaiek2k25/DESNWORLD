@@ -1,8 +1,6 @@
 <script setup>
-import { store, dismissError, loadDemo, resetAll } from '../store.js'
-import { computed } from 'vue'
-
-const errorProblems = computed(() => store.error?.problems || [])
+import { store, dismissError, loadSample, resetAll } from '../store.js'
+import StageProgress from './StageProgress.vue'
 </script>
 
 <template>
@@ -19,9 +17,10 @@ const errorProblems = computed(() => store.error?.problems || [])
       </div>
       <h2 class="display state-title">Exploring possible futures…</h2>
       <p class="state-msg">{{ store.loadingMessage }}</p>
+      <StageProgress />
       <p class="faint state-hint">
-        The engine validates each stage of structured output and repairs malformed responses in a
-        bounded loop. This usually takes a minute with a live model.
+        The engine validates every stage of structured output and repairs malformed responses in a
+        bounded loop — it never invents sources or truncated JSON.
       </p>
     </template>
 
@@ -32,13 +31,15 @@ const errorProblems = computed(() => store.error?.problems || [])
       <div class="notice notice-error">
         {{ store.error?.message || 'Unknown error.' }}
       </div>
-      <ul v-if="errorProblems.length" class="bullets problems">
-        <li v-for="(p, i) in errorProblems" :key="i"><code>{{ p }}</code></li>
+      <ul v-if="store.error?.problems?.length" class="bullets problems">
+        <li v-for="(p, i) in store.error.problems" :key="i"><code>{{ p }}</code></li>
       </ul>
       <p v-if="store.error?.hint" class="state-msg">{{ store.error.hint }}</p>
       <div class="btn-row state-actions">
         <button class="btn" @click="dismissError">Back</button>
-        <button v-if="!store.report" class="btn btn-primary" @click="loadDemo">Explore the demo report</button>
+        <button v-if="!store.report" class="btn btn-primary" @click="loadSample">
+          Explore the demo report
+        </button>
       </div>
     </template>
 
@@ -77,31 +78,37 @@ const errorProblems = computed(() => store.error?.problems || [])
       </div>
       <h2 class="display state-title">Every question holds more than one future</h2>
       <p class="state-msg">
-        Compose a question on the left to grow a scenario tree: a baseline, three alternative branches,
-        the triggers that separate them, and an honest account of what is still unknown.
+        Compose a question on the left and press <strong>Generate Scenarios</strong> — the entire
+        pipeline runs inside this page. You'll get a baseline, three alternative branches, their
+        triggers, an honest account of what is still unknown, and a comparison you can explore.
       </p>
       <div class="btn-row state-actions">
-        <button class="btn btn-primary" @click="loadDemo">Explore the demo report</button>
+        <button class="btn btn-primary" @click="loadSample">Explore the demo report</button>
         <button v-if="store.report" class="btn" @click="resetAll">Clear</button>
       </div>
       <div class="empty-steps">
         <div class="step">
           <span class="step-num">1</span>
-          <div><strong>Ask</strong><div class="faint">A question, a domain, a time horizon — plus any evidence you already trust.</div></div>
+          <div>
+            <strong>Ask</strong>
+            <div class="faint">A question, a domain, a time horizon — plus any evidence you already trust.</div>
+          </div>
         </div>
         <div class="step">
           <span class="step-num">2</span>
-          <div><strong>Branch</strong><div class="faint">Baseline plus exactly three meaningfully different alternatives, each with its triggers.</div></div>
+          <div>
+            <strong>Run</strong>
+            <div class="faint">Demo engine, your own AI key, or a DESNWORLD API — your choice, all in this UI.</div>
+          </div>
         </div>
         <div class="step">
           <span class="step-num">3</span>
-          <div><strong>Compare</strong><div class="faint">A side-by-side report of differences, uncertainties and missing evidence — then expand any branch.</div></div>
+          <div>
+            <strong>See everything</strong>
+            <div class="faint">Overview, scenario tree, side-by-side comparison, and the full report — then expand any branch.</div>
+          </div>
         </div>
       </div>
-      <p class="faint">
-        A full demo report — baseline, three alternatives and expanded sub-branches — is one click
-        away. No account, no keys in the browser.
-      </p>
     </template>
   </div>
 </template>

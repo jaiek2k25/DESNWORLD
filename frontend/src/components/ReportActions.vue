@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { store, importReportObject } from '../store.js'
 import { downloadReportJSON, readReportFile } from '../lib/report.js'
+import { reportToMarkdown } from '../engine/markdown.js'
 
 const fileInput = ref(null)
 const flash = ref('')
@@ -10,6 +11,21 @@ function download() {
   if (!store.report) return
   downloadReportJSON(store.report)
   flash.value = 'Report JSON downloaded.'
+  setTimeout(() => (flash.value = ''), 2500)
+}
+
+function downloadMarkdown() {
+  if (!store.report) return
+  const blob = new Blob([reportToMarkdown(store.report)], { type: 'text/markdown' })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = `desnworld-report-${store.report.report_id || 'export'}.md`
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  URL.revokeObjectURL(url)
+  flash.value = 'Markdown summary downloaded.'
   setTimeout(() => (flash.value = ''), 2500)
 }
 
@@ -44,6 +60,7 @@ async function onFileChange(event) {
       </svg>
       Import JSON
     </button>
+    <button class="btn btn-small" @click="downloadMarkdown">Export .md</button>
     <button class="btn btn-small" @click="download">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M12 4v12m0 0l-4-4m4 4l4-4M4 18v2h16v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>

@@ -50,6 +50,10 @@ jobs:
         working-directory: frontend
         run: npm install
 
+      - name: Run browser-engine test suite
+        working-directory: frontend
+        run: npm test
+
       - name: Production build
         working-directory: frontend
         run: npm run build

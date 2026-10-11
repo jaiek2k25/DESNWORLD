@@ -9,6 +9,8 @@ export default defineConfig({
   plugins: [vue()],
   server: {
     port: 5173,
+    // Allow proxied preview hosts (e.g. *.e2b.app) in development.
+    allowedHosts: true,
     proxy: {
       // Local dev convenience: forward API calls to the DESNWORLD dev server
       // (`python -m desnworld.server`). GitHub Pages cannot proxy anything —
@@ -21,6 +23,7 @@ export default defineConfig({
   },
   preview: {
     port: 4173,
+    allowedHosts: true,
     proxy: {
       '/api': {
         target: `http://127.0.0.1:${process.env.DESNWORLD_PORT || 8787}`,

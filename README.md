@@ -47,8 +47,10 @@ DESNWORLD/
 │   │   ├── cli.py             CLI used by GitHub Actions and local runs
 │   │   └── server.py          Optional local dev API (stdlib, no framework)
 │   └── tests/                 pytest suite (129 tests)
-├── frontend/                  Vue 3 + Vite static SPA (GitHub Pages compatible)
-│   └── src/                   Scenario tree, detail panel, comparison view, …
+├── frontend/                  Vue 3 + Vite web app (GitHub Pages compatible)
+│   ├── src/engine/            In-browser pipeline: schema v1, prompts, providers,
+│   │                          repair loop — same reports as the Python engine
+│   └── src/components/        Scenario tree, overview, comparison, full report, …
 ├── .github/workflows/
 │   ├── generate-scenarios.yml workflow_dispatch remote generation → artifact
 │   ├── ci.yml                 Engine tests + frontend production build
@@ -118,23 +120,47 @@ python -m desnworld.cli --validate-only report.json
 Run the tests and the frontend build:
 
 ```bash
-python -m pytest engine/tests          # 129 tests
-cd frontend && npm install && npm run build
+python -m pytest engine/tests          # 129 engine tests
+cd frontend && npm install && npm test # 75 browser-engine + UI tests
+npm run build
 ```
 
-### Local web interface + dev API
+## Run everything in the website
+
+The web app is a complete DESNWORLD workstation: compose a question, run the full pipeline, and
+inspect every result — **Overview**, **Scenario tree**, **Compare** side-by-side, and the **Full
+report** (assumptions matrix, triggers, consequences & indicators, uncertainties, missing
+information, limitations, evidence ledger) — with local run history and JSON/Markdown export.
+Branch expansion (3 sub-branches per node, two levels deep) is one click.
+
+Pick a **Run mode** in the UI:
+
+| Mode | What it does | Credentials |
+|------|--------------|-------------|
+| **Demo engine** | Deterministic offline pipeline in your browser — the whole workflow, instantly | none |
+| **Your AI model** | The real pipeline runs in your browser against any OpenAI-compatible endpoint (`/chat/completions`) | an API key **you** supply at runtime — never embedded in this codebase; stored in memory, or localStorage only if you opt in |
+| **DESNWORLD API** | Pipeline runs on a DESNWORLD server (`python -m desnworld.server`, same-origin `/api` or a URL) | keys stay on the server |
+
+Every mode produces the same schema-v1 report (browser and Python engine outputs are
+interchangeable — reports generated in the browser pass the Python validator and vice versa).
+Provenance rules are enforced identically in both runtimes: fabricated sources are rejected,
+unbacked claims are downgraded to AI assumptions, and `data_status` always states honestly what
+was and was not checked.
+
+**Browser-side AI notes:** your key is sent only to the endpoint you configure (Authorization
+header). The endpoint must allow browser CORS — OpenAI, OpenRouter, Groq and Together generally
+do; if yours does not, use API mode or the GitHub Actions workflow. Site operators embed **no**
+keys and **no** GitHub tokens; the workflow-dispatch path is never exposed to browsers.
+
+### Local development server (optional)
 
 ```bash
 # terminal 1 — the local dev API (stdlib only; uses mock output if LLM_API_KEY is unset)
 python -m desnworld.server             # http://127.0.0.1:8787
 
-# terminal 2 — the web interface
-cd frontend && npm run dev             # http://localhost:5173 (proxies /api to :8787)
+# terminal 2 — the web app (proxies /api to :8787)
+cd frontend && npm run dev             # http://localhost:5173
 ```
-
-In the UI, open **configure endpoint** and use `http://127.0.0.1:8787`, then **Generate
-Scenarios**. Without any endpoint the interface still works fully for exploring, comparing,
-importing and downloading reports, plus a bundled demo report.
 
 ## GitHub-first deployment (no personal server required)
 
@@ -164,8 +190,8 @@ workflow steps — **no tokens or API keys are ever embedded in frontend code**.
 5. Open the deployed web interface (or `frontend` locally) → **Import JSON** → explore the tree,
    switch to **Compare**, and **Download JSON** whenever you want a copy.
 
-The web interface's **Generate Scenarios** button can also copy ready-to-paste workflow inputs to
-the clipboard for this exact flow.
+The website's **Run settings → "Prefer a batch run?"** panel documents this flow; the artifact's
+`desnworld-report.json` imports cleanly with **Import JSON**.
 
 ### GitHub Pages (the interface)
 
@@ -175,21 +201,23 @@ relative asset paths, so it works at `https://<user>.github.io/DESNWORLD/` witho
 
 ### Deployment architecture and limitations
 
-**GitHub Pages is a static host, not a backend.** It serves the interface and demo data; it
-cannot call AI models. Interactive, on-demand generation in the browser therefore requires one
-of:
+**GitHub Pages is a static host, not a backend.** With the in-browser engine it no longer *needs*
+one: the **Demo engine** and **Your AI model** modes run the entire pipeline client-side, and the
+same static bundle works at `https://<user>.github.io/DESNWORLD/` with zero configuration. What
+this architecture means:
 
-1. **GitHub Actions** (implemented): manual `workflow_dispatch` runs the pipeline remotely with
-   secrets, uploads the JSON report as a downloadable artifact — no server at all. This is the
-   recommended prototype path.
-2. **A secure backend or job service** (documented, not shipped): deploy `engine/desnworld/server.py`
-   (or any service wrapping `ScenarioEngine`) behind HTTPS with authentication and restricted
-   CORS, and point the interface's **configure endpoint** field at it. For public use this is
-   required: never expose a private workflow through a browser-side token — a static page cannot
-   hold a GitHub token or AI API key securely.
+- **Real AI runs in the browser use the user's own key.** The site ships no secrets. Users who
+  want AI-generated scenarios bring an OpenAI-compatible endpoint and key at runtime. The key
+  never touches your servers (there are none) and is never committed or embedded.
+- **Browser-side calls need CORS.** If a provider blocks browser requests, the user can run the
+  **DESNWORLD API** mode against `python -m desnworld.server` (or any service wrapping
+  `ScenarioEngine`) deployed behind HTTPS with authentication and restricted CORS — or use the
+  **GitHub Actions** batch path and import the artifact.
+- **The GitHub Actions workflow stays a batch fallback** (`workflow_dispatch` with secrets) — and
+  is never invoked from the browser. Do not expose a private workflow through a browser-side
+  token; a static page cannot hold a GitHub token or AI API key securely.
 
-The local dev server (`python -m desnworld.server`) is a convenience for development only: it
-binds to localhost with open CORS and must not be exposed publicly as-is.
+The local dev server binds to localhost with open CORS and must not be exposed publicly as-is.
 
 ### Limitations of this prototype
 
@@ -198,23 +226,26 @@ binds to localhost with open CORS and must not be exposed publicly as-is.
   own, their content enters the analysis only as user-supplied evidence.
 - **AI output is speculative.** Scenarios are structured possibilities generated by a language
   model, not forecasts. Stances are qualitative ("more likely / plausible / less likely"), never
-  computed probabilities.
+  computed probabilities. The Demo engine is illustrative output, labelled as such.
 - **Educational scope for markets.** No personalized investment advice, no target prices, no
   guaranteed returns.
-- **Manual generation trigger.** On-demand, in-browser generation needs the secure backend
-  described above; the Actions path is intentionally manual (`workflow_dispatch`).
+- **Browser key custody is the user's responsibility.** With "remember key" enabled the key
+  lives in that browser's localStorage; anyone with access to the device can read it. Keys can
+  also leak via browser extensions — power users should prefer API mode with a server-side key.
+- **CORS varies by provider.** Endpoints that block browser calls require API mode or Actions.
 - **Schema v1 is young.** Reports carry `schema_version`; consumers accept MAJOR 1 with MINOR ≤
   their own. Breaking changes will bump MAJOR.
 - **Cost control.** Real runs make 4+ model calls per report (one per stage, plus repairs and
-  expansions). Use `use_mock: true` to smoke-test the workflow for free.
+  expansions). Use the Demo engine to learn the workflow for free.
 
 ## Engineering notes
 
-- **Tests** (`engine/tests/`): input validation, schema validation (including provenance and
-  tree-shape rules), scenario branching and sub-branch expansion, repair loops, and error
-  handling (missing credentials, malformed JSON, rate limits, timeouts, CLI exit codes).
+- **Tests**: `engine/tests/` — 129 pytest cases (input validation, schema validation including
+  provenance and tree-shape rules, branching/expansion, repair loops, error handling);
+  `frontend/tests/` — 75 vitest cases covering the in-browser engine (same four areas plus JSON
+  extraction, provider error mapping, and UI smoke tests that mount the real components).
 - **Frontend build**: `cd frontend && npm run build` produces `frontend/dist` (static, relative
-  paths). The app has no runtime dependencies beyond Vue and never holds credentials.
+  paths). Runtime dependencies: Vue only. The app holds no secrets; user keys are runtime-only.
 - **Credentials**: `.env` is git-ignored; only `.env.example` is committed. Never commit real
   keys or generated sensitive data.
 
@@ -233,8 +264,8 @@ redistributed; DESNWORLD replaces it with the scenario pipeline described above.
 
 ## Recommended next milestone
 
-Deploy a minimal authenticated scenario service (FastAPI/Flask or a serverless job queue) that
-wraps `ScenarioEngine`, add a market-data adapter behind the existing `data_status` contract with
-licensed sources, and wire the interface's Generate action to it — keeping the GitHub Actions
-path as a batch fallback. After that: richer branching depth controls, report diffing between
-runs, and i18n.
+Ship an optional hosted scenario service (FastAPI or serverless job queue wrapping
+`ScenarioEngine`) with per-user authentication and quota, so users who do not want to bring
+their own key can run real AI scenarios without a browser-side key — keeping the BYO-key,
+Demo-engine, and GitHub Actions paths as fallbacks. Then: a licensed market-data adapter behind
+the existing `data_status` contract, report diffing between runs, and i18n.

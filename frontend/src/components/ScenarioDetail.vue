@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { store, selectedScenario, expand } from '../store.js'
+import { store, selectedScenario, runExpand } from '../store.js'
 import { stanceClass, STANCE_LABELS, KIND_LABELS } from '../lib/report.js'
 
 const scenario = selectedScenario
@@ -99,7 +99,7 @@ function evidenceById(id) {
     </section>
 
     <div class="expand-row">
-      <button v-if="canExpand" class="btn btn-small" :disabled="!!store.busyExpanding" @click="expand(scenario.id)">
+      <button v-if="canExpand" class="btn btn-small" :disabled="!!store.busyExpanding" @click="runExpand(scenario.id)">
         <template v-if="expanding">Expanding…</template>
         <template v-else>＋ Expand into 3 sub-branches</template>
       </button>

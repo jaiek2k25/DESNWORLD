@@ -1,17 +1,22 @@
 <script setup>
-import { onMounted } from 'vue'
-import { store, checkHealth, setMode, loadDemo, probeSameOrigin } from './store.js'
+import { store, setMode, dismissError } from './store.js'
 import QuestionComposer from './components/QuestionComposer.vue'
+import ProviderSettings from './components/ProviderSettings.vue'
+import HistoryPanel from './components/HistoryPanel.vue'
 import ScenarioTree from './components/ScenarioTree.vue'
 import ScenarioDetail from './components/ScenarioDetail.vue'
 import ComparisonView from './components/ComparisonView.vue'
+import OverviewView from './components/OverviewView.vue'
+import ReportView from './components/ReportView.vue'
 import StateView from './components/StateView.vue'
 import ReportActions from './components/ReportActions.vue'
 
-onMounted(async () => {
-  if (store.apiBase) await checkHealth()
-  else await probeSameOrigin()
-})
+const TABS = [
+  ['overview', 'Overview'],
+  ['explore', 'Scenario tree'],
+  ['compare', 'Compare'],
+  ['report', 'Full report']
+]
 </script>
 
 <template>
@@ -34,55 +39,62 @@ onMounted(async () => {
       </svg>
       <div class="brand-text">
         <div class="brand-name display">DESNWORLD</div>
-        <div class="brand-tag">AI scenario exploration — possibilities, not predictions</div>
+        <div class="brand-tag">Run the full scenario engine in your browser — possibilities, not predictions</div>
       </div>
     </div>
     <div class="header-right">
-      <span v-if="store.apiEnabled && store.apiHealth?.status === 'ok'" class="badge stance-more">
-        <span class="dot"></span>
-        API connected
-      </span>
-      <span v-else-if="store.apiBase" class="badge stance-less"><span class="dot"></span>API not reachable</span>
-      <span v-else class="badge stance-less"><span class="dot"></span>Static mode</span>
+      <span v-if="store.run.kind === 'demo'" class="badge stance-plausible"><span class="dot"></span>Demo engine</span>
+      <span v-else-if="store.run.kind === 'browser'" class="badge stance-more"><span class="dot"></span>Your AI model</span>
+      <span v-else class="badge stance-more"><span class="dot"></span>API mode</span>
     </div>
   </header>
 
   <main class="layout" :class="{ 'has-report': store.status === 'completed' }">
     <section class="col col-composer">
       <QuestionComposer />
+      <ProviderSettings />
+      <HistoryPanel />
     </section>
 
     <section class="col col-main">
+      <div v-if="store.error && store.status === 'completed'" class="notice notice-error error-banner">
+        <div>
+          <strong>{{ store.error.message }}</strong>
+          <div v-if="store.error.hint" class="faint">{{ store.error.hint }}</div>
+          <ul v-if="store.error.problems?.length" class="bullets">
+            <li v-for="(p, i) in store.error.problems.slice(0, 6)" :key="i"><code>{{ p }}</code></li>
+          </ul>
+        </div>
+        <button class="btn btn-small" @click="dismissError">Dismiss</button>
+      </div>
+
       <StateView v-if="store.status !== 'completed'" />
       <template v-else>
-        <div class="mode-tabs" role="tablist" aria-label="View mode">
+        <div class="mode-tabs" role="tablist" aria-label="Result views">
           <button
+            v-for="[id, label] in TABS"
+            :key="id"
             role="tab"
             class="chip"
-            :class="{ active: store.mode === 'explore' }"
-            :aria-selected="store.mode === 'explore'"
-            @click="setMode('explore')"
+            :class="{ active: store.mode === id }"
+            :aria-selected="store.mode === id"
+            @click="setMode(id)"
           >
-            Scenario tree
-          </button>
-          <button
-            role="tab"
-            class="chip"
-            :class="{ active: store.mode === 'compare' }"
-            :aria-selected="store.mode === 'compare'"
-            @click="setMode('compare')"
-          >
-            Compare
+            {{ label }}
           </button>
           <div class="mode-spacer"></div>
           <ReportActions />
         </div>
-        <ScenarioTree v-if="store.mode === 'explore'" />
-        <ComparisonView v-else />
+        <OverviewView v-if="store.mode === 'overview'" />
+        <template v-else-if="store.mode === 'explore'">
+          <ScenarioTree />
+        </template>
+        <ComparisonView v-else-if="store.mode === 'compare'" />
+        <ReportView v-else />
       </template>
     </section>
 
-    <aside class="col col-detail" v-if="store.status === 'completed'">
+    <aside class="col col-detail" v-if="store.status === 'completed' && store.mode === 'explore'">
       <ScenarioDetail />
     </aside>
   </main>
@@ -91,12 +103,11 @@ onMounted(async () => {
     <div class="footer-inner">
       <p>
         <strong>DESNWORLD</strong> explores possible futures with documented assumptions, triggers and
-        uncertainties. It does not predict the future with certainty. Stock-market content is educational —
-        never price predictions, personalized investment advice, or guaranteed returns.
+        uncertainties. It does not predict the future with certainty. Stock-market content is
+        educational — never price predictions, personalized investment advice, or guaranteed returns.
       </p>
       <p class="faint">
         Sourced facts, user-supplied facts and AI-generated assumptions are labelled throughout.
-        <button class="linklike" @click="loadDemo">Load the demo report</button>
         · Derived in part from MiroFish (AGPL-3.0) · Schema v1
       </p>
     </div>
@@ -162,6 +173,10 @@ onMounted(async () => {
 }
 
 .layout.has-report {
+  grid-template-columns: minmax(290px, 340px) minmax(0, 1fr);
+}
+
+.layout.has-report:has(.col-detail) {
   grid-template-columns: minmax(290px, 340px) minmax(0, 1fr) minmax(300px, 370px);
 }
 
@@ -174,6 +189,13 @@ onMounted(async () => {
   flex-direction: column;
   gap: 14px;
   min-height: 560px;
+}
+
+.error-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
 }
 
 .mode-tabs {
@@ -204,18 +226,9 @@ onMounted(async () => {
   margin: 4px 0;
 }
 
-.linklike {
-  background: none;
-  border: none;
-  color: var(--gold-bright);
-  cursor: pointer;
-  font: inherit;
-  padding: 0;
-  text-decoration: underline;
-}
-
 @media (max-width: 1280px) {
-  .layout.has-report {
+  .layout.has-report,
+  .layout.has-report:has(.col-detail) {
     grid-template-columns: minmax(280px, 330px) minmax(0, 1fr);
   }
   .col-detail {
@@ -225,7 +238,8 @@ onMounted(async () => {
 
 @media (max-width: 980px) {
   .layout,
-  .layout.has-report {
+  .layout.has-report,
+  .layout.has-report:has(.col-detail) {
     grid-template-columns: 1fr;
   }
   .site-header {
