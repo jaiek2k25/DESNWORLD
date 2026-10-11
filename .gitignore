@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.tgz
+
+# Environment and secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Generated scenario reports and run output
+out/
+*.local.json
+runs/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp

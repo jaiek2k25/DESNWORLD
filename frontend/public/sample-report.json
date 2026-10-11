@@ -1,0 +1,450 @@
+{
+  "schema_version": "1.0.0",
+  "report_id": "rpt-22918aa7c7ee",
+  "generated_at": "2026-10-11T10:12:31+00:00",
+  "generator": {
+    "name": "DESNWORLD",
+    "engine_version": "0.1.0",
+    "schema_version": "1.0.0",
+    "provider": "mock",
+    "model": "desnworld-mock",
+    "mock": true
+  },
+  "request": {
+    "question": "How might shifts in interest-rate expectations affect broad equity markets over the next year?",
+    "domain": "stock_market_education",
+    "horizon": {
+      "months": 12,
+      "label": "1 year"
+    },
+    "evidence": [
+      {
+        "id": "e1",
+        "kind": "user_supplied_fact",
+        "text": "User observation: recent commentary has focused on how sensitive equity valuations are to interest-rate expectations.",
+        "source_uri": null,
+        "evidence_ref": null,
+        "note": null
+      },
+      {
+        "id": "e2",
+        "kind": "sourced_fact",
+        "text": "Historical example (educational): the 2022 rate-hiking cycle coincided with broad equity drawdowns before a partial recovery.",
+        "source_uri": "https://en.wikipedia.org/wiki/2021%E2%80%932023_inflation_surge",
+        "evidence_ref": null,
+        "note": "Background context only; not a prediction base."
+      }
+    ]
+  },
+  "disclaimer": "DESNWORLD explores possible futures; it does not predict the future with certainty. All scenarios are structured possibilities with documented assumptions, triggers, and uncertainties. This stock-market module is educational: scenarios are not price predictions, not personalized investment advice, and no outcome or return is guaranteed.",
+  "data_status": {
+    "live_market_data_checked": false,
+    "sources": [
+      "https://en.wikipedia.org/wiki/2021%E2%80%932023_inflation_surge"
+    ],
+    "message": "No live market data or economic indicators were queried in this run. Scenarios are qualitative and rest only on the question and user-supplied evidence. Do not treat anything here as a price prediction."
+  },
+  "baseline": {
+    "id": "baseline",
+    "label": "Baseline",
+    "title": "Continuation of visible conditions",
+    "narrative": "For the question 'How might shifts in interest-rate expectations affect broad equity markets over the next year?', the baseline scenario extends currently visible conditions over the chosen horizon without assuming major surprises. Slow-moving trends continue at roughly their recent pace, and no single shock dominates the picture. This is one possible future among several — not a forecast.",
+    "stance": {
+      "qualitative": "more_likely",
+      "note": "Qualitative assessment only; DESNWORLD does not compute probabilities and this is not a prediction."
+    },
+    "assumptions": [
+      {
+        "id": "b-a1",
+        "text": "No unprecedented structural break occurs within the horizon.",
+        "kind": "ai_assumption",
+        "confidence": "medium",
+        "evidence_ref": null,
+        "source_uri": null
+      },
+      {
+        "id": "b-a2",
+        "text": "Conditions visible in the user's question and evidence persist roughly unchanged.",
+        "kind": "user_supplied_fact",
+        "confidence": "medium",
+        "evidence_ref": null,
+        "source_uri": null
+      }
+    ],
+    "triggers": [
+      {
+        "id": "b-t1",
+        "event": "A major unexpected shock",
+        "description": "A large shock would break the baseline and push the future toward one of the alternative branches."
+      },
+      {
+        "id": "b-t2",
+        "event": "Sustained trend reversal in key indicators",
+        "description": "If leading indicators reverse for several periods, the continuation assumption weakens."
+      }
+    ],
+    "possible_consequences": [
+      "Outcomes stay within the range of recent experience.",
+      "Planning assumptions from the past period remain usable with modest adjustments."
+    ],
+    "indicators_to_watch": [
+      "Momentum in the indicators named in the question",
+      "Surprise indices and policy announcements"
+    ],
+    "parent_id": null,
+    "children": [],
+    "child_comparison": null
+  },
+  "alternatives": [
+    {
+      "id": "alt-1",
+      "label": "Alternative 1",
+      "title": "Upside drift beyond trend",
+      "narrative": "A plausible alternative for 'How might shifts in interest-rate expectations affect broad equity markets over the next year?' is an upside surprise: conditions improve beyond the baseline trend. Confidence builds gradually, and early signals appear in indicators before the broader picture shifts. This branch is conditional on specific triggers occurring — it is a possibility to explore, not a prediction.",
+      "stance": {
+        "qualitative": "plausible",
+        "note": "Qualitative assessment only; DESNWORLD does not compute probabilities and this is not a prediction."
+      },
+      "assumptions": [
+        {
+          "id": "a1-a1",
+          "text": "Positive catalysts identified in the triggers materialise.",
+          "kind": "ai_assumption",
+          "confidence": "low",
+          "evidence_ref": null,
+          "source_uri": null
+        },
+        {
+          "id": "a1-a2",
+          "text": "No offsetting negative shock occurs in the same window.",
+          "kind": "ai_assumption",
+          "confidence": "low",
+          "evidence_ref": null,
+          "source_uri": null
+        }
+      ],
+      "triggers": [
+        {
+          "id": "a1-t1",
+          "event": "Broad-based improvement in leading indicators",
+          "description": "Sustained improvement pulls expectations above the baseline path."
+        }
+      ],
+      "possible_consequences": [
+        "Expectations re-rate gradually toward the improved path.",
+        "Planning under the baseline becomes conservative relative to outcomes."
+      ],
+      "indicators_to_watch": [
+        "Revision direction in leading indicators",
+        "Breadth of improvement across sectors"
+      ],
+      "parent_id": null,
+      "children": [
+        {
+          "id": "alt-1.c1",
+          "label": "Sub 1",
+          "title": "Gradual development",
+          "narrative": "This sub-branch develops gradually: early signals strengthen slowly and the parent scenario deepens without abrupt moves.",
+          "stance": {
+            "qualitative": "plausible",
+            "note": "Qualitative assessment only; not a probability estimate. Derived sub-branch under alt-1 for 'How might shifts in interest-rate expectations affect broad equity markets over the next year?'."
+          },
+          "assumptions": [
+            {
+              "id": "alt-1.c1.a1",
+              "text": "Current momentum continues without interruption.",
+              "kind": "ai_assumption",
+              "confidence": "low",
+              "evidence_ref": null,
+              "source_uri": null
+            }
+          ],
+          "triggers": [
+            {
+              "id": "alt-1.c1.t1",
+              "event": "Steady continuation of leading indicators",
+              "description": "Indicators keep moving in the parent branch's direction."
+            }
+          ],
+          "possible_consequences": [
+            "Consequences of 'Gradual development' unfold within the parent branch's framing."
+          ],
+          "indicators_to_watch": [
+            "Persistence of the parent branch's triggers"
+          ],
+          "parent_id": "alt-1",
+          "children": [],
+          "child_comparison": null
+        },
+        {
+          "id": "alt-1.c2",
+          "label": "Sub 2",
+          "title": "Accelerated development",
+          "narrative": "This sub-branch develops faster than expected: feedback effects amplify the parent scenario, compressing the timeline of consequences.",
+          "stance": {
+            "qualitative": "plausible",
+            "note": "Qualitative assessment only; not a probability estimate. Derived sub-branch under alt-1 for 'How might shifts in interest-rate expectations affect broad equity markets over the next year?'."
+          },
+          "assumptions": [
+            {
+              "id": "alt-1.c2.a1",
+              "text": "Feedback loops strengthen rather than dampen the initial move.",
+              "kind": "ai_assumption",
+              "confidence": "low",
+              "evidence_ref": null,
+              "source_uri": null
+            }
+          ],
+          "triggers": [
+            {
+              "id": "alt-1.c2.t1",
+              "event": "Self-reinforcing feedback in the parent branch",
+              "description": "Amplification shortens the path to the parent scenario's consequences."
+            }
+          ],
+          "possible_consequences": [
+            "Consequences of 'Accelerated development' unfold within the parent branch's framing."
+          ],
+          "indicators_to_watch": [
+            "Persistence of the parent branch's triggers"
+          ],
+          "parent_id": "alt-1",
+          "children": [],
+          "child_comparison": null
+        },
+        {
+          "id": "alt-1.c3",
+          "label": "Sub 3",
+          "title": "Stalled or reversed development",
+          "narrative": "This sub-branch stalls or partially reverses: the parent scenario's drivers fade, and outcomes drift back toward the baseline.",
+          "stance": {
+            "qualitative": "less_likely",
+            "note": "Qualitative assessment only; not a probability estimate. Derived sub-branch under alt-1 for 'How might shifts in interest-rate expectations affect broad equity markets over the next year?'."
+          },
+          "assumptions": [
+            {
+              "id": "alt-1.c3.a1",
+              "text": "The parent branch's drivers prove temporary.",
+              "kind": "ai_assumption",
+              "confidence": "low",
+              "evidence_ref": null,
+              "source_uri": null
+            }
+          ],
+          "triggers": [
+            {
+              "id": "alt-1.c3.t1",
+              "event": "Fade-out of the parent branch's triggers",
+              "description": "Loss of momentum pulls outcomes back toward baseline conditions."
+            }
+          ],
+          "possible_consequences": [
+            "Consequences of 'Stalled or reversed development' unfold within the parent branch's framing."
+          ],
+          "indicators_to_watch": [
+            "Persistence of the parent branch's triggers"
+          ],
+          "parent_id": "alt-1",
+          "children": [],
+          "child_comparison": null
+        }
+      ],
+      "child_comparison": {
+        "summary": "The three sub-branches differ in tempo and persistence: gradual deepening, accelerated development, or a stall back toward baseline. Which one unfolds depends on whether the parent branch's drivers persist, amplify, or fade.",
+        "dimensions": [
+          {
+            "dimension": "Tempo",
+            "baseline": "Parent branch tempo",
+            "alternatives": {
+              "alt-1.c1": "Gradual",
+              "alt-1.c2": "Accelerated",
+              "alt-1.c3": "Stalling"
+            }
+          },
+          {
+            "dimension": "Persistence of parent drivers",
+            "baseline": "n/a",
+            "alternatives": {
+              "alt-1.c1": "Steady",
+              "alt-1.c2": "Self-reinforcing",
+              "alt-1.c3": "Fading"
+            }
+          }
+        ],
+        "key_differences": [
+          "Sub-branches differ mainly in tempo and in whether parent drivers persist or fade."
+        ],
+        "what_would_change_the_outlook": [
+          "Evidence that the parent branch's triggers are strengthening, weakening, or reversing."
+        ]
+      }
+    },
+    {
+      "id": "alt-2",
+      "label": "Alternative 2",
+      "title": "Downside stress episode",
+      "narrative": "Another possibility for 'How might shifts in interest-rate expectations affect broad equity markets over the next year?' is a downside stress episode: a deterioration that exceeds ordinary variation. Typically this unfolds as a trigger event followed by second-round effects that reinforce the initial move. This branch is conditional, not forecasted.",
+      "stance": {
+        "qualitative": "plausible",
+        "note": "Qualitative assessment only; DESNWORLD does not compute probabilities and this is not a prediction."
+      },
+      "assumptions": [
+        {
+          "id": "a2-a1",
+          "text": "A stress trigger occurs and is not quickly contained.",
+          "kind": "ai_assumption",
+          "confidence": "low",
+          "evidence_ref": null,
+          "source_uri": null
+        }
+      ],
+      "triggers": [
+        {
+          "id": "a2-t1",
+          "event": "A disorderly repricing event",
+          "description": "A sharp repricing event raises risk aversion and pushes outcomes below the baseline."
+        }
+      ],
+      "possible_consequences": [
+        "Uncertainty rises and decision-making windows shorten.",
+        "Weak assumptions embedded in plans are exposed."
+      ],
+      "indicators_to_watch": [
+        "Volatility and funding-stress measures",
+        "Policy response speed and credibility"
+      ],
+      "parent_id": null,
+      "children": [],
+      "child_comparison": null
+    },
+    {
+      "id": "alt-3",
+      "label": "Alternative 3",
+      "title": "Structural regime shift",
+      "narrative": "A third possibility for 'How might shifts in interest-rate expectations affect broad equity markets over the next year?' is a regime shift: the rules, institutions, or technology landscape change enough that extrapolation from the past stops working. Historical patterns become less informative; new baselines must be formed. This is the branch of deep uncertainty.",
+      "stance": {
+        "qualitative": "less_likely",
+        "note": "Qualitative assessment only; DESNWORLD does not compute probabilities and this is not a prediction."
+      },
+      "assumptions": [
+        {
+          "id": "a3-a1",
+          "text": "A structural change (regulatory, technological, or institutional) takes hold within the horizon.",
+          "kind": "ai_assumption",
+          "confidence": "low",
+          "evidence_ref": null,
+          "source_uri": null
+        }
+      ],
+      "triggers": [
+        {
+          "id": "a3-t1",
+          "event": "Durable policy or technology regime change",
+          "description": "A lasting change in the operating environment invalidates extrapolation from the recent past."
+        }
+      ],
+      "possible_consequences": [
+        "Historical analogies lose predictive value for a time.",
+        "Scenario ranges widen; diversification of options gains value."
+      ],
+      "indicators_to_watch": [
+        "Regulatory and standards decisions",
+        "Adoption curves of the new technology or regime"
+      ],
+      "parent_id": null,
+      "children": [],
+      "child_comparison": null
+    }
+  ],
+  "comparison": {
+    "summary": "The baseline extends visible conditions; the alternatives explore an upside drift, a downside stress episode, and a structural regime shift. They differ in direction, in the triggers that would select each branch, and in how much historical experience remains informative. None of these branches is a prediction.",
+    "dimensions": [
+      {
+        "dimension": "Direction vs. baseline",
+        "baseline": "Path continuation",
+        "alternatives": {
+          "alt-1": "Above trend",
+          "alt-2": "Below trend",
+          "alt-3": "New trend definition"
+        }
+      },
+      {
+        "dimension": "Dominant trigger type",
+        "baseline": "Absence of major shocks",
+        "alternatives": {
+          "alt-1": "Broad indicator improvement",
+          "alt-2": "Disorderly repricing event",
+          "alt-3": "Regime change"
+        }
+      },
+      {
+        "dimension": "Value of historical analogies",
+        "baseline": "High",
+        "alternatives": {
+          "alt-1": "Moderate",
+          "alt-2": "Moderate",
+          "alt-3": "Low"
+        }
+      },
+      {
+        "dimension": "Uncertainty level",
+        "baseline": "Moderate",
+        "alternatives": {
+          "alt-1": "Moderate-high",
+          "alt-2": "High",
+          "alt-3": "Very high"
+        }
+      }
+    ],
+    "key_differences": [
+      "The branches differ most in which trigger fires and how much history remains informative.",
+      "The baseline is the only branch that assumes continuity; all alternatives require a specific trigger."
+    ],
+    "what_would_change_the_outlook": [
+      "Sustained movement in leading indicators toward either alternative.",
+      "A policy or technology decision that would constitute a regime change."
+    ]
+  },
+  "uncertainties": [
+    {
+      "id": "u1",
+      "statement": "The pace and sequencing of the triggers above are unknown.",
+      "impact": "high",
+      "missing_evidence": "Time-stamped leading-indicator data covering the horizon."
+    },
+    {
+      "id": "u2",
+      "statement": "Interactions between triggers could amplify or dampen each branch.",
+      "impact": "medium",
+      "missing_evidence": "Cross-domain evidence on how these factors have co-moved historically."
+    }
+  ],
+  "missing_information": [
+    "No live market data or economic indicators were queried for this run; any market-quantitative claim would need such data to be supplied as evidence.",
+    "Domain-expert judgement on the plausibility of each trigger has not been collected."
+  ],
+  "limitations": [
+    "All scenarios are AI-generated possibilities, not predictions, and may omit important factors.",
+    "The evidence base consists only of the question and user-supplied evidence; without external data the analysis is qualitative.",
+    "This is educational scenario exploration, not financial advice; no buy/sell instruction or guaranteed return is implied.",
+    "This report was produced by the deterministic mock provider (demo/test mode) without calling an AI model; content is illustrative and must not be treated as analysis."
+  ],
+  "evidence_ledger": [
+    {
+      "id": "e1",
+      "kind": "user_supplied_fact",
+      "text": "User observation: recent commentary has focused on how sensitive equity valuations are to interest-rate expectations.",
+      "source_uri": null,
+      "evidence_ref": null,
+      "note": null
+    },
+    {
+      "id": "e2",
+      "kind": "sourced_fact",
+      "text": "Historical example (educational): the 2022 rate-hiking cycle coincided with broad equity drawdowns before a partial recovery.",
+      "source_uri": "https://en.wikipedia.org/wiki/2021%E2%80%932023_inflation_surge",
+      "evidence_ref": null,
+      "note": "Background context only; not a prediction base."
+    }
+  ]
+}
