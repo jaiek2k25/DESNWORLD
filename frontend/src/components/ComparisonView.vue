@@ -10,11 +10,12 @@ const columns = computed(() => {
   return [report.baseline, ...(report.alternatives || [])].filter(Boolean)
 })
 
+// theme-aware column accents
 const columnColors = {
-  baseline: '#e8a33d',
-  'alt-1': '#5ec8d8',
-  'alt-2': '#e06b7b',
-  'alt-3': '#b48be0'
+  baseline: 'var(--gold)',
+  'alt-1': 'var(--cyan)',
+  'alt-2': 'var(--rose)',
+  'alt-3': 'var(--violet)'
 }
 </script>
 
@@ -130,7 +131,7 @@ const columnColors = {
   flex-direction: column;
   gap: 3px;
   text-align: left;
-  background: rgba(8, 12, 22, 0.4);
+  background: var(--overlay-soft);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-sm);
   padding: 9px 11px;

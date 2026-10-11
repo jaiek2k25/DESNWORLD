@@ -50,30 +50,30 @@ import StageProgress from './StageProgress.vue'
           <path
             d="M70 120 C 130 120, 150 60, 220 60"
             fill="none"
-            stroke="rgba(232,163,61,0.55)"
+            style="stroke: color-mix(in srgb, var(--gold) 60%, transparent)"
             stroke-width="2.5"
             stroke-dasharray="5 7"
           />
           <path
             d="M70 120 C 130 120, 160 120, 240 120"
             fill="none"
-            stroke="rgba(94,200,216,0.55)"
+            style="stroke: color-mix(in srgb, var(--cyan) 60%, transparent)"
             stroke-width="2.5"
             stroke-dasharray="5 7"
           />
           <path
             d="M70 120 C 130 120, 150 180, 220 180"
             fill="none"
-            stroke="rgba(224,107,123,0.55)"
+            style="stroke: color-mix(in srgb, var(--rose) 60%, transparent)"
             stroke-width="2.5"
             stroke-dasharray="5 7"
           />
-          <circle cx="70" cy="120" r="16" fill="rgba(232,163,61,0.25)" stroke="#e8a33d" stroke-width="2.5" />
-          <circle cx="220" cy="60" r="11" fill="rgba(94,200,216,0.22)" stroke="#5ec8d8" stroke-width="2" />
-          <circle cx="240" cy="120" r="11" fill="rgba(180,139,224,0.22)" stroke="#b48be0" stroke-width="2" />
-          <circle cx="220" cy="180" r="11" fill="rgba(224,107,123,0.22)" stroke="#e06b7b" stroke-width="2" />
-          <circle cx="320" cy="60" r="7" fill="rgba(94,200,216,0.18)" stroke="#5ec8d8" stroke-width="1.5" />
-          <circle cx="340" cy="180" r="7" fill="rgba(224,107,123,0.18)" stroke="#e06b7b" stroke-width="1.5" />
+          <circle cx="70" cy="120" r="16" style="fill: color-mix(in srgb, var(--gold) 25%, transparent); stroke: var(--gold)" stroke-width="2.5" />
+          <circle cx="220" cy="60" r="11" style="fill: color-mix(in srgb, var(--cyan) 22%, transparent); stroke: var(--cyan)" stroke-width="2" />
+          <circle cx="240" cy="120" r="11" style="fill: color-mix(in srgb, var(--violet) 22%, transparent); stroke: var(--violet)" stroke-width="2" />
+          <circle cx="220" cy="180" r="11" style="fill: color-mix(in srgb, var(--rose) 22%, transparent); stroke: var(--rose)" stroke-width="2" />
+          <circle cx="320" cy="60" r="7" style="fill: color-mix(in srgb, var(--cyan) 18%, transparent); stroke: var(--cyan)" stroke-width="1.5" />
+          <circle cx="340" cy="180" r="7" style="fill: color-mix(in srgb, var(--rose) 18%, transparent); stroke: var(--rose)" stroke-width="1.5" />
         </svg>
       </div>
       <h2 class="display state-title">Every question holds more than one future</h2>
@@ -168,13 +168,13 @@ import StageProgress from './StageProgress.vue'
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  border: 1.5px dashed rgba(232, 163, 61, 0.5);
+  border: 1.5px dashed color-mix(in srgb, var(--gold) 50%, transparent);
   animation: spin 12s linear infinite;
 }
 
 .ring-b {
   inset: 22px;
-  border-color: rgba(94, 200, 216, 0.45);
+  border-color: color-mix(in srgb, var(--cyan) 55%, transparent);
   animation-duration: 8s;
   animation-direction: reverse;
 }
@@ -231,7 +231,7 @@ import StageProgress from './StageProgress.vue'
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--overlay-soft);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 12px;
@@ -242,8 +242,8 @@ import StageProgress from './StageProgress.vue'
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: rgba(232, 163, 61, 0.18);
-  color: var(--gold-bright);
+  background: color-mix(in srgb, var(--gold) 18%, transparent);
+  color: var(--gold-deep);
   font-size: 12px;
   font-weight: 700;
   display: inline-flex;

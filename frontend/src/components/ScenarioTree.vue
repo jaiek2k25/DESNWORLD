@@ -8,20 +8,22 @@ import { stanceClass, STANCE_LABELS } from '../lib/report.js'
  * branches; expanded sub-branches fan out further. Hand-rolled layout (no
  * charting library): depth-first leaf packing with bezier links.
  */
-const PALETTE = {
-  root: '#e8a33d',
-  baseline: '#e8a33d',
-  'alt-1': '#5ec8d8',
-  'alt-2': '#e06b7b',
-  'alt-3': '#b48be0'
+// Branch colours come from CSS classes (.b1–.b4) so every theme recolours
+// the tree consistently. b1 = root/baseline (accent gold), b2–b4 = branches.
+const BRANCH_CLASS = {
+  root: 'b1',
+  baseline: 'b1',
+  'alt-1': 'b2',
+  'alt-2': 'b3',
+  'alt-3': 'b4'
 }
 
-function branchColor(node, fallback) {
+function branchClass(node, fallback) {
   if (!node) return fallback
-  if (PALETTE[node.id]) return PALETTE[node.id]
+  if (BRANCH_CLASS[node.id]) return BRANCH_CLASS[node.id]
   // inherit from the top-level ancestor id prefix (alt-1.c2 → alt-1)
   const rootId = String(node.id).split('.')[0]
-  return PALETTE[rootId] || fallback
+  return BRANCH_CLASS[rootId] || fallback
 }
 
 const V_GAP = 116
@@ -44,12 +46,12 @@ const layout = computed(() => {
     depth: 0,
     x: 170,
     y: 0,
-    color: PALETTE.root,
+    cls: 'b1',
     isRoot: true,
     stance: null
   }
 
-  function place(node, depth, parent, color) {
+  function place(node, depth, parent, cls) {
     const entry = {
       id: node.id,
       label: node.title || node.id,
@@ -57,7 +59,7 @@ const layout = computed(() => {
       depth,
       x: 170 + depth * H_STEP,
       y: 0,
-      color,
+      cls,
       isRoot: false,
       stance: node.stance?.qualitative || 'plausible',
       hasChildren: (node.children || []).length > 0,
@@ -66,7 +68,7 @@ const layout = computed(() => {
     const children = node.children || []
     if (children.length) {
       const ys = children.map((child) =>
-        place(child, depth + 1, entry, branchColor(child, color))
+        place(child, depth + 1, entry, branchClass(child, cls))
       )
       entry.y = ys.reduce((a, b) => a + b, 0) / ys.length
     } else {
@@ -81,14 +83,14 @@ const layout = computed(() => {
         y1: parent.y,
         x2: entry.x - NODE_R,
         y2: entry.y,
-        color
+        cls
       })
     }
     return entry.y
   }
 
   const topNodes = [report.baseline, ...(report.alternatives || [])].filter(Boolean)
-  const rootYs = topNodes.map((n) => place(n, 1, root, branchColor(n, PALETTE.root)))
+  const rootYs = topNodes.map((n) => place(n, 1, root, branchClass(n, 'b1')))
   root.y = rootYs.reduce((a, b) => a + b, 0) / (rootYs.length || 1)
   nodes.push(root)
 
@@ -142,7 +144,7 @@ const STARS = Array.from({ length: 42 }, (_, i) => ({
       </div>
       <div class="legend">
         <span class="legend-item" v-for="(label, key) in { baseline: 'Baseline', 'alt-1': 'Alt 1', 'alt-2': 'Alt 2', 'alt-3': 'Alt 3' }" :key="key">
-          <span class="swatch" :style="{ background: PALETTE[key] }"></span>{{ label }}
+          <span class="swatch" :class="BRANCH_CLASS[key]"></span>{{ label }}
         </span>
       </div>
     </div>
@@ -157,8 +159,8 @@ const STARS = Array.from({ length: 42 }, (_, i) => ({
       >
         <defs>
           <radialGradient id="nodeGlow" cx="50%" cy="40%" r="65%">
-            <stop offset="0%" stop-color="rgba(255,255,255,0.24)" />
-            <stop offset="100%" stop-color="rgba(255,255,255,0.02)" />
+            <stop offset="0%" class="glow-in" />
+            <stop offset="100%" class="glow-out" />
           </radialGradient>
           <filter id="softGlow" x="-60%" y="-60%" width="220%" height="220%">
             <feGaussianBlur stdDeviation="7" result="blur" />
@@ -173,10 +175,10 @@ const STARS = Array.from({ length: 42 }, (_, i) => ({
           <circle
             v-for="(s, i) in STARS"
             :key="'s' + i"
+            class="star"
             :cx="s.x"
             :cy="s.y"
             :r="s.r"
-            fill="#f2ede3"
             :opacity="s.o"
           />
         </g>
@@ -186,11 +188,12 @@ const STARS = Array.from({ length: 42 }, (_, i) => ({
           <path
             v-for="link in layout.links"
             :key="link.key"
+            class="link"
+            :class="link.cls"
             :d="linkPath(link)"
             fill="none"
-            :stroke="link.color"
             stroke-width="2.4"
-            stroke-opacity="0.5"
+            stroke-opacity="0.55"
             stroke-linecap="round"
           />
         </g>
@@ -200,7 +203,7 @@ const STARS = Array.from({ length: 42 }, (_, i) => ({
           v-for="node in layout.nodes"
           :key="node.id"
           class="node-group"
-          :class="{ selectable: !node.isRoot, selected: isSelected(node.id) }"
+          :class="[node.cls, { selectable: !node.isRoot, selected: isSelected(node.id) }]"
           :tabindex="node.isRoot ? -1 : 0"
           role="button"
           :aria-label="`${node.fullLabel} — open details`"
@@ -210,32 +213,32 @@ const STARS = Array.from({ length: 42 }, (_, i) => ({
         >
           <circle
             v-if="isSelected(node.id)"
+            class="node-ring"
             :cx="node.x"
             :cy="node.y"
             :r="NODE_R + 10"
-            :fill="'none'"
-            :stroke="node.color"
+            fill="none"
             stroke-width="1.6"
             stroke-opacity="0.55"
             filter="url(#softGlow)"
           />
           <circle
+            class="node-face"
             :cx="node.x"
             :cy="node.y"
             :r="NODE_R"
-            :fill="'url(#nodeGlow)'"
-            :stroke="node.color"
+            fill="url(#nodeGlow)"
             :stroke-width="isSelected(node.id) ? 3.4 : 2.2"
             :filter="isSelected(node.id) ? 'url(#softGlow)' : undefined"
           />
-          <circle :cx="node.x" :cy="node.y" :r="10" :fill="node.color" :opacity="node.isRoot ? 0.9 : 0.85" />
+          <circle class="node-core" :cx="node.x" :cy="node.y" r="10" :opacity="node.isRoot ? 0.95 : 0.85" />
 
           <text
             class="node-label"
+            :class="{ selected: isSelected(node.id) }"
             :x="node.x"
             :y="node.y + NODE_R + 22"
             text-anchor="middle"
-            :fill="isSelected(node.id) ? '#f2ede3' : '#c8cfdd'"
           >
             {{ nodeLabel(node) }}
           </text>
@@ -245,13 +248,12 @@ const STARS = Array.from({ length: 42 }, (_, i) => ({
             :x="node.x"
             :y="node.y + NODE_R + 38"
             text-anchor="middle"
-            :fill="node.color"
-            opacity="0.85"
+            opacity="0.9"
           >
             {{ STANCE_LABELS[node.stance] || node.stance }}
           </text>
           <g v-if="node.hasChildren">
-            <text class="node-sub" :x="node.x" :y="node.y - NODE_R - 10" text-anchor="middle" :fill="node.color" opacity="0.8">
+            <text class="node-sub" :x="node.x" :y="node.y - NODE_R - 10" text-anchor="middle" opacity="0.85">
               {{ (node.node.children || []).length }} sub-branches
             </text>
           </g>
@@ -305,10 +307,10 @@ const STARS = Array.from({ length: 42 }, (_, i) => ({
 
 .tree-scroll {
   overflow: auto;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background:
-    radial-gradient(700px 320px at 20% 0%, rgba(232, 163, 61, 0.05), transparent 60%),
-    rgba(8, 12, 22, 0.35);
+    radial-gradient(700px 320px at 20% 0%, color-mix(in srgb, var(--gold) 7%, transparent), transparent 60%),
+    var(--overlay-soft);
   border: 1px solid var(--border);
 }
 
@@ -319,6 +321,47 @@ const STARS = Array.from({ length: 42 }, (_, i) => ({
   height: auto;
   min-height: 420px;
 }
+
+.star {
+  fill: var(--star);
+}
+
+.glow-in {
+  stop-color: color-mix(in srgb, var(--text) 18%, transparent);
+}
+
+.glow-out {
+  stop-color: transparent;
+}
+
+/* branch palettes — recoloured by every theme */
+.node-group.b1 .node-face, .node-group.b1 .node-ring { stroke: var(--gold); }
+.node-group.b2 .node-face, .node-group.b2 .node-ring { stroke: var(--cyan); }
+.node-group.b3 .node-face, .node-group.b3 .node-ring { stroke: var(--rose); }
+.node-group.b4 .node-face, .node-group.b4 .node-ring { stroke: var(--violet); }
+.node-group.b1 .node-core { fill: var(--gold); }
+.node-group.b2 .node-core { fill: var(--cyan); }
+.node-group.b3 .node-core { fill: var(--rose); }
+.node-group.b4 .node-core { fill: var(--violet); }
+.node-group.b1 .node-sub { fill: var(--gold); }
+.node-group.b2 .node-sub { fill: var(--cyan); }
+.node-group.b3 .node-sub { fill: var(--rose); }
+.node-group.b4 .node-sub { fill: var(--violet); }
+.link.b1 { stroke: var(--gold); }
+.link.b2 { stroke: var(--cyan); }
+.link.b3 { stroke: var(--rose); }
+.link.b4 { stroke: var(--violet); }
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.swatch.b1 { background: var(--gold); }
+.swatch.b2 { background: var(--cyan); }
+.swatch.b3 { background: var(--rose); }
+.swatch.b4 { background: var(--violet); }
 
 .node-group {
   cursor: default;
@@ -341,6 +384,12 @@ const STARS = Array.from({ length: 42 }, (_, i) => ({
   font-size: 13.5px;
   font-weight: 600;
   pointer-events: none;
+  fill: var(--text-muted);
+  transition: fill 0.2s ease;
+}
+
+.node-label.selected {
+  fill: var(--text);
 }
 
 .node-sub {
@@ -348,6 +397,7 @@ const STARS = Array.from({ length: 42 }, (_, i) => ({
   font-size: 10.5px;
   letter-spacing: 0.06em;
   pointer-events: none;
+  fill: var(--text-faint);
 }
 
 .tree-footnote {

@@ -165,7 +165,7 @@ function submit() {
   border-radius: var(--radius-sm);
   padding: 10px;
   margin-bottom: 10px;
-  background: rgba(8, 12, 22, 0.35);
+  background: var(--input-bg);
 }
 
 .evidence-item textarea {
