@@ -34,16 +34,24 @@ logger = logging.getLogger("desnworld.server")
 
 
 def _make_engine() -> ScenarioEngine:
-    if Config.LLM_API_KEY:
+    import os
+
+    if Config.LLM_API_KEY and os.environ.get("DESNWORLD_FORCE_MOCK", "").strip().lower() != "true":
         from .providers import OpenAIProvider
 
         return ScenarioEngine(OpenAIProvider())
     from .providers import MockScenarioProvider
 
-    logger.warning(
-        "LLM_API_KEY is not configured - serving MOCK scenario output. "
-        "Content is illustrative only."
-    )
+    if Config.LLM_API_KEY:
+        logger.warning(
+            "DESNWORLD_FORCE_MOCK is enabled - serving MOCK scenario output "
+            "even though LLM_API_KEY is configured. Content is illustrative only."
+        )
+    else:
+        logger.warning(
+            "LLM_API_KEY is not configured - serving MOCK scenario output. "
+            "Content is illustrative only."
+        )
     return ScenarioEngine(MockScenarioProvider())
 
 
@@ -159,8 +167,10 @@ def main() -> None:
     host, port = server.server_address[:2]
     print(f"DESNWORLD dev API listening on http://{host}:{port}")
     print("Endpoints: GET /api/health, POST /api/generate, POST /api/expand, POST /api/validate")
-    if not Config.LLM_API_KEY:
-        print("NOTE: LLM_API_KEY is not set - the server will return MOCK output.")
+    import os
+
+    if not Config.LLM_API_KEY or os.environ.get("DESNWORLD_FORCE_MOCK", "").strip().lower() == "true":
+        print("NOTE: serving MOCK output (LLM_API_KEY unset or DESNWORLD_FORCE_MOCK=true).")
     try:
         server.serve_forever()
     except KeyboardInterrupt:  # pragma: no cover

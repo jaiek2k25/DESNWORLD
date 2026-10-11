@@ -41,7 +41,8 @@ def _fake_response(content, finish_reason="stop"):
 
 
 class TestMissingCredentials:
-    def test_llm_client_requires_api_key(self):
+    def test_llm_client_requires_api_key(self, monkeypatch):
+        monkeypatch.setattr(Config, "LLM_API_KEY", None)
         with pytest.raises(MissingCredentialsError):
             LLMClient(api_key="")
 

@@ -34,6 +34,44 @@ const browserForm = reactive({
   apiKey: store.run.browser.apiKey,
   rememberKey: store.run.browser.rememberKey
 })
+
+// Endpoint presets — base URLs and suggested models only. API keys are never
+// embedded here; users paste their own key at runtime.
+const PRESETS = [
+  {
+    id: 'nvidia',
+    label: 'NVIDIA NIM',
+    baseUrl: 'https://integrate.api.nvidia.com/v1',
+    model: 'meta/llama-3.3-70b-instruct',
+    hint: 'build.nvidia.com — OpenAI-compatible NIM endpoints'
+  },
+  {
+    id: 'openai',
+    label: 'OpenAI',
+    baseUrl: 'https://api.openai.com/v1',
+    model: 'gpt-4o-mini',
+    hint: 'platform.openai.com'
+  },
+  {
+    id: 'openrouter',
+    label: 'OpenRouter',
+    baseUrl: 'https://openrouter.ai/api/v1',
+    model: 'meta-llama/llama-3.3-70b-instruct',
+    hint: 'openrouter.ai — many models behind one key'
+  },
+  {
+    id: 'custom',
+    label: 'Custom',
+    baseUrl: '',
+    model: '',
+    hint: 'any OpenAI-compatible /chat/completions endpoint'
+  }
+]
+
+function applyPreset(preset) {
+  browserForm.baseUrl = preset.baseUrl
+  if (preset.model) browserForm.model = preset.model
+}
 const apiDraft = ref(store.run.apiBase)
 const testResult = ref(null)
 const testing = ref(false)
@@ -104,6 +142,22 @@ async function saveApi() {
 
     <div v-if="kind === 'browser'" class="mode-form">
       <div class="field">
+        <label>Endpoint preset</label>
+        <div class="chip-row">
+          <button
+            v-for="preset in PRESETS"
+            :key="preset.id"
+            type="button"
+            class="chip"
+            :class="{ active: browserForm.baseUrl === preset.baseUrl && preset.id !== 'custom' }"
+            :title="preset.hint"
+            @click="applyPreset(preset)"
+          >
+            {{ preset.label }}
+          </button>
+        </div>
+      </div>
+      <div class="field">
         <label for="llm-base">Endpoint base URL</label>
         <input id="llm-base" type="url" v-model="browserForm.baseUrl" placeholder="https://api.openai.com/v1" />
       </div>
@@ -126,8 +180,9 @@ async function saveApi() {
       </div>
       <div class="faint key-note">
         Your key stays in your browser and is sent only to the endpoint above. Browser-side calls
-        require the provider to allow CORS (OpenAI, OpenRouter, Groq and Together generally do). If
-        yours blocks them, use the DESNWORLD API mode or the GitHub Actions workflow.
+        require the provider to allow CORS (NVIDIA NIM, OpenAI, OpenRouter, Groq and Together
+        generally do). If yours blocks them, use the DESNWORLD API mode or the GitHub Actions
+        workflow.
       </div>
     </div>
 

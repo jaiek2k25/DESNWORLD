@@ -103,6 +103,10 @@ pip install -e "./engine[dev]"
 
 # 2. Configure credentials for real generation (any OpenAI-compatible endpoint)
 cp .env.example .env       # then edit LLM_API_KEY / LLM_BASE_URL / LLM_MODEL_NAME
+#    e.g. NVIDIA NIM (https://build.nvidia.com):
+#      LLM_API_KEY=nvapi-...
+#      LLM_BASE_URL=https://integrate.api.nvidia.com/v1
+#      LLM_MODEL_NAME=meta/llama-3.3-70b-instruct
 
 # 3. Run a scenario (use --mock for an offline demo without any key)
 python -m desnworld.cli \
@@ -166,14 +170,26 @@ cd frontend && npm run dev             # http://localhost:5173
 
 ### Required GitHub Actions secrets
 
-| Secret | Required | Purpose |
-|--------|----------|---------|
-| `LLM_API_KEY` | **yes** (real runs) | API key for an OpenAI-compatible Chat Completions endpoint |
-| `LLM_BASE_URL` | no | Endpoint base URL (default `https://api.openai.com/v1`) |
-| `LLM_MODEL_NAME` | no | Model id (default `gpt-4o-mini`) |
+| Secret | Required | Purpose | NVIDIA NIM example |
+|--------|----------|---------|--------------------|
+| `LLM_API_KEY` | **yes** (real runs) | API key for an OpenAI-compatible Chat Completions endpoint | `nvapi-…` |
+| `LLM_BASE_URL` | no | Endpoint base URL (default `https://api.openai.com/v1`) | `https://integrate.api.nvidia.com/v1` |
+| `LLM_MODEL_NAME` | no | Model id (default `gpt-4o-mini`) | `meta/llama-3.3-70b-instruct` |
 
 Set them under **Settings → Secrets and variables → Actions**. Keys live only in server-side
 workflow steps — **no tokens or API keys are ever embedded in frontend code**.
+
+### Where the same AI provider can be configured
+
+DESNWORLD supports one AI provider configuration in three places, depending on how you run:
+
+1. **Local engine / dev server** — `.env` at the repo root (`LLM_API_KEY`, `LLM_BASE_URL`,
+   `LLM_MODEL_NAME`). Git-ignored; never commit it.
+2. **GitHub Actions** — the three repository secrets above (`Generate Scenarios` workflow).
+3. **Browser ("Your AI model" mode)** — Run settings in the web app: pick the **NVIDIA NIM**
+   (or OpenAI / OpenRouter) preset, paste your own key. The key is kept in your browser only.
+
+All three accept the same OpenAI-compatible providers (NVIDIA NIM, OpenAI, OpenRouter, …).
 
 ### Run your first DESNWORLD simulation (GitHub Actions)
 
