@@ -1,0 +1,55 @@
+# DESNWORLD continuous integration — engine tests and frontend production build.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  engine-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install engine with dev dependencies
+        run: pip install -e "./engine[dev]"
+
+      - name: Run engine test suite
+        run: python -m pytest engine/tests -v
+
+      - name: Mock end-to-end smoke (generate + expand + validate)
+        run: |
+          python -m desnworld.cli --question "How might remote-work adoption evolve over two years?" --domain business --horizon 24 --mock --output /tmp/smoke/report.json
+          python -m desnworld.cli --expand alt-1 --from-report /tmp/smoke/report.json --mock --output /tmp/smoke/expanded.json
+          python -m desnworld.cli --validate-only /tmp/smoke/expanded.json
+
+  frontend-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Production build
+        working-directory: frontend
+        run: npm run build

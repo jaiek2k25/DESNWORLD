@@ -1,0 +1,171 @@
+# DESNWORLD — remote scenario generation (GitHub-first, no personal server).
+#
+# Manually triggered. Runs the DESNWORLD scenario pipeline with the AI
+# credentials stored in repository secrets and uploads the JSON report as a
+# workflow artifact that can be imported into the DESNWORLD web interface.
+#
+# Required secrets (Settings → Secrets and variables → Actions):
+#   LLM_API_KEY      — API key for an OpenAI-compatible Chat Completions endpoint
+# Optional secrets:
+#   LLM_BASE_URL     — defaults to https://api.openai.com/v1
+#   LLM_MODEL_NAME   — defaults to gpt-4o-mini
+#
+# The workflow never prints secrets. Set use_mock=true to run the full
+# pipeline offline (no secrets needed) for a smoke test.
+
+name: Generate Scenarios
+
+on:
+  workflow_dispatch:
+    inputs:
+      question:
+        description: "The question to explore (min 10 characters)"
+        required: true
+        type: string
+      domain:
+        description: "Scenario domain"
+        required: true
+        type: choice
+        options:
+          - stock_market_education
+          - general
+          - business
+          - technology
+        default: stock_market_education
+      horizon_months:
+        description: "Time horizon in months"
+        required: true
+        type: choice
+        options: ["3", "6", "12", "18", "24", "36", "60"]
+        default: "12"
+      evidence:
+        description: "Optional evidence — one item per line (user-supplied facts)"
+        required: false
+        type: string
+        default: ""
+      expand_scenario_id:
+        description: "Optional: also expand this branch into 3 sub-branches (e.g. alt-1)"
+        required: false
+        type: string
+        default: ""
+      use_mock:
+        description: "Offline smoke run with the deterministic mock provider (no API key needed)"
+        required: false
+        type: boolean
+        default: false
+      include_markdown:
+        description: "Also attach a Markdown summary of the report"
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install DESNWORLD engine
+        run: pip install -e ./engine
+
+      - name: Validate request inputs (fail fast, no API calls)
+        env:
+          INPUT_QUESTION: ${{ inputs.question }}
+          INPUT_DOMAIN: ${{ inputs.domain }}
+          INPUT_HORIZON: ${{ inputs.horizon_months }}
+        run: |
+          python - <<'PYEOF'
+          import os, sys
+          sys.path.insert(0, "engine")
+          from desnworld.input_validation import request_from_mapping
+          from desnworld.errors import InputValidationError
+          try:
+              req = request_from_mapping({
+                  "question": os.environ["INPUT_QUESTION"],
+                  "domain": os.environ["INPUT_DOMAIN"],
+                  "horizon_months": int(os.environ["INPUT_HORIZON"]),
+              })
+          except InputValidationError as exc:
+              print(f"::error::{exc.message}")
+              for p in exc.problems:
+                  print(f"::error::{p}")
+              sys.exit(2)
+          print(f"Request OK: domain={req['domain']} horizon={req['horizon']['label']}")
+          PYEOF
+
+      - name: Write evidence file
+        env:
+          INPUT_EVIDENCE: ${{ inputs.evidence }}
+        run: |
+          python - <<'PYEOF'
+          import json, os
+          lines = [ln.strip() for ln in os.environ.get("INPUT_EVIDENCE", "").splitlines() if ln.strip()]
+          evidence = [{"text": ln, "kind": "user_supplied_fact"} for ln in lines]
+          os.makedirs("run-output", exist_ok=True)
+          with open("run-output/evidence.json", "w", encoding="utf-8") as fh:
+              json.dump(evidence, fh, ensure_ascii=False, indent=2)
+          print(f"Evidence items: {len(evidence)}")
+          PYEOF
+
+      - name: Run scenario pipeline
+        id: generate
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_MODEL_NAME: ${{ secrets.LLM_MODEL_NAME }}
+          INPUT_QUESTION: ${{ inputs.question }}
+          INPUT_DOMAIN: ${{ inputs.domain }}
+          INPUT_HORIZON: ${{ inputs.horizon_months }}
+          INPUT_MOCK: ${{ inputs.use_mock }}
+        run: |
+          EXTRA=""
+          if [ "$INPUT_MOCK" = "true" ]; then EXTRA="--mock"; fi
+          if [ -s run-output/evidence.json ] && [ "$(python -c "import json;print(len(json.load(open('run-output/evidence.json'))))")" != "0" ]; then
+            EXTRA="$EXTRA --evidence-file run-output/evidence.json"
+          fi
+          if [ "${{ inputs.include_markdown }}" = "true" ]; then EXTRA="$EXTRA --markdown"; fi
+          python -m desnworld.cli \
+            --question "$INPUT_QUESTION" \
+            --domain "$INPUT_DOMAIN" \
+            --horizon "$INPUT_HORIZON" \
+            --output run-output/desnworld-report.json \
+            $EXTRA
+
+      - name: Expand branch (optional)
+        if: ${{ inputs.expand_scenario_id != '' }}
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_MODEL_NAME: ${{ secrets.LLM_MODEL_NAME }}
+          INPUT_MOCK: ${{ inputs.use_mock }}
+          INPUT_EXPAND: ${{ inputs.expand_scenario_id }}
+        run: |
+          EXTRA=""
+          if [ "$INPUT_MOCK" = "true" ]; then EXTRA="--mock"; fi
+          if [ "${{ inputs.include_markdown }}" = "true" ]; then EXTRA="$EXTRA --markdown"; fi
+          python -m desnworld.cli \
+            --expand "$INPUT_EXPAND" \
+            --from-report run-output/desnworld-report.json \
+            --output run-output/desnworld-report.json \
+            $EXTRA
+
+      - name: Validate generated report
+        run: python -m desnworld.cli --validate-only run-output/desnworld-report.json
+
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: desnworld-report
+          path: run-output/desnworld-report.*
+          if-no-files-found: error
+          retention-days: 90

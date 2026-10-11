@@ -1,0 +1,20 @@
+{
+  "name": "desnworld-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "DESNWORLD web interface — AI scenario exploration (possibilities, not predictions)",
+  "license": "AGPL-3.0",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host"
+  },
+  "dependencies": {
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.0",
+    "vite": "^7.0.0"
+  }
+}
